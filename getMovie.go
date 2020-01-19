@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-func getMList(c *colly.Collector, db *sql.DB)  {
+func getMList(c *colly.Collector, db *sql.DB) {
 	start := time.Now()
 	c.OnError(func(r *colly.Response, err error) {
 		log.Println("Something went wrong:", err, r.StatusCode)
@@ -25,14 +25,14 @@ func getMList(c *colly.Collector, db *sql.DB)  {
 		for key, val := range doubanConfig {
 			r.Headers.Set(key, val)
 		}
-		fmt.Println(r.ProxyURL," : Visiting", r.URL)
+		fmt.Println(r.ProxyURL, " : Visiting", r.URL)
 	})
 
 	c.OnResponse(func(r *colly.Response) {
 		fmt.Printf("get response at:%v\n", time.Since(start))
 		log.Printf("Proxy Address: %s\n", r.Request.ProxyURL)
 		start = time.Now()
-		fmt.Printf("%s\n\n", string(r.Body))
+		//fmt.Printf("%s\n\n", string(r.Body))
 		json.Unmarshal(r.Body, movieArr)
 		var insertStr bytes.Buffer
 		foo := bufio.NewWriter(&insertStr)
@@ -46,7 +46,7 @@ func getMList(c *colly.Collector, db *sql.DB)  {
 		foo.WriteString(" on duplicate key update rate=values(rate),playable=values(playable), IsNew=values(IsNew)")
 		foo.Flush()
 		str := insertStr.String()
-		fmt.Printf("get : %v ", str)
+		//fmt.Printf("get : %v ", str)
 		stmt, err := db.Prepare(str)
 		checkErr(err)
 		sqlres, err := stmt.Exec()
@@ -71,7 +71,7 @@ func getMList(c *colly.Collector, db *sql.DB)  {
 	})
 }
 
-func getMInfo( cInfo *colly.Collector, infoIserte chan string)  {
+func getMInfo(cInfo *colly.Collector, infoIserte chan string) {
 	start := time.Now()
 	cInfo.OnRequest(func(r *colly.Request) {
 		println(r.ProxyURL)
@@ -88,7 +88,6 @@ func getMInfo( cInfo *colly.Collector, infoIserte chan string)  {
 
 	cInfo.OnHTML("#content", func(e *colly.HTMLElement) {
 		//strings.Replace(e.Text, " ", "", -1)
-		println("onHtml")
 		var infoArr [][]string
 		var MInfo MovieInfo
 		var RInfo RateInfo
@@ -141,10 +140,8 @@ func getMInfo( cInfo *colly.Collector, infoIserte chan string)  {
 		foo.Flush()
 		str := insertStr.String()
 		go func(s string) {
-			println("insert")
 			infoIserte <- s
 		}(str)
 		//fmt.Printf("\n%s\n", strings.Replace(e.Text, "\n", "", -1))
 	})
 }
-

@@ -111,12 +111,15 @@ func main() {
 	//	[http://163.204.245.107:9999 http://47.104.172.108:8118 http://183.166.132.2:9999
 	//["163.204.247.195:9999", "129.204.29.130:8080", "47.106.216.42:8000", "211.159.219.225:8118", "27.188.65.244:8060", "42.159.10.142:8080", "163.204.242.197:9999", "183.166.20.56:9999", "221.2.155.35:8060", "47.107.38.138:8000", "180.160.54.27:8118", "60.2.44.182:47293",]
 	start := time.Now()
-	go func() {
-		for {
-			countNum <- startCom
-			startCom++
-		}
-	}()
+	mCount := countDown(&startCom)
+	//go func() {
+	//	for {
+	//		println("get count:", startCom)
+	//		countNum <- startCom
+	//		startCom++
+	//	}
+	//}()
+
 	//proxysArr := []string{
 	//	//"http://140.255.186.40:9999",
 	//	"http://222.95.144.43:3000",
@@ -147,7 +150,7 @@ func main() {
 	extensions.RandomUserAgent(c)
 	extensions.Referer(c)
 	getMList(c, db)
-	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=1&page_start=0"
+	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=2&page_start=0"
 	c.Visit(url)
 	c.Wait()
 	fmt.Printf("end sys: %v\n", time.Since(start))
@@ -174,8 +177,10 @@ func main() {
 	cCom.Async = false
 	var insertStr bytes.Buffer
 	itemCount := 0
+	commUrl := ""
 	foo := bufio.NewWriter(&insertStr)
-	foo.WriteString(`insert into movieInfo ( movieId, rateInfo, showDate, duration, imbd, nTitle, summary, commentNum, wantSee, hasSeen) VALUES `)
+	//insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values () on duplicate key update votes=values(votes), rate=values(rate), comment=values(comment);
+	foo.WriteString(`insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values `)
 	cCom.OnHTML(".article", func(e *colly.HTMLElement) {
 		itemCount = itemCount + e.DOM.Find(`.comment-item`).Size()
 		e.DOM.Find(`.comment-item`).Each(func(i int, s *goquery.Selection) {
@@ -214,38 +219,45 @@ func main() {
 		})
 		rege := regexp.MustCompile(`\d+`)
 		num, _ := strconv.Atoi(rege.FindString(e.ChildText("li:first-child")))
-		go func() {
-			startCom := <-countNum
-			println(startCom)
-			if num > startCom*20 {
+		mCount()
+		go func(n int, startCom int) {
+			//startCom := <-countNum
+			println("\n current:", startCom)
+			if n > startCom*300 {
 				infoWp.Add(1)
-				println("get:!!", startCom, num)
+				println("get:!!", startCom, n)
 				foo.WriteString(",")
-				comUrl := strings.Join([]string{"https://movie.douban.com/subject/30473791/comments?start=", strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
+				comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
 				sleepNum, _ := strconv.ParseFloat(strconv.Itoa((5+rand.Intn(12)))+"e8", 64)
 				time.Sleep(time.Duration(sleepNum))
 				err := cCom.Visit(comUrl)
 				checkErr(err)
 			}
 			infoWp.Done()
-		}()
-
+		}(num, startCom)
 		//fmt.Printf("asdasd:%s",rege.FindString(e.ChildText("li:first-child")))
 	})
-	start = time.Now()
-	for i := 0; i < 2; i++ {
-		infoWp.Add(1)
-		startCom := <-countNum
-		comUrl := strings.Join([]string{"https://movie.douban.com/subject/30473791/comments?start=", strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
-		err := cCom.Visit(comUrl)
-		checkErr(err)
+	for idx, val := range movieArr.Subjects {
+		start = time.Now()
+		for i := 0; i < 2; i++ {
+			infoWp.Add(1)
+			//startCom := <-countNum
+			println("link num:", startCom)
+			commUrl = strings.Join([]string{"https://movie.douban.com/subject/", val.Id, "/comments?start="}, "")
+			comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
+			err := cCom.Visit(comUrl)
+			checkErr(err)
+			mCount()
+		}
+		infoWp.Wait()
+		foo.WriteString(" on duplicate key update rateInfo=values(rateInfo), commentNum=values(commentNum), wantSee=values(wantSee), hasSeen=values(hasSeen);")
+		foo.Flush()
+		sqlStr := insertStr.String()
+		fmt.Printf("\n%s\n", sqlStr)
+		fmt.Printf("No.%d %s-%s finish:%v\n total get: %d ", idx, val.Title, val.Id, time.Since(start), itemCount)
+		startCom = 0
+		itemCount = 0
 	}
-	infoWp.Wait()
-	foo.WriteString(" on duplicate key update rateInfo=values(rateInfo), commentNum=values(commentNum), wantSee=values(wantSee), hasSeen=values(hasSeen);")
-	foo.Flush()
-	sqlStr := insertStr.String()
-	fmt.Printf("\n%s\n", sqlStr)
-	fmt.Printf("finish:%v\n total get: %d ", time.Since(start), itemCount)
 }
 
 func sqlIn(ch chan string, d *sql.DB, wp *sync.WaitGroup) {
@@ -259,8 +271,14 @@ func sqlIn(ch chan string, d *sql.DB, wp *sync.WaitGroup) {
 		checkErr(err)
 		affect, err := sqlres.RowsAffected()
 		checkErr(err)
-		fmt.Println("e:", affect)
+		fmt.Println("affect:", affect)
 		wp.Done()
+	}
+}
+
+func countDown(n *int) func() {
+	return func() {
+		*n++
 	}
 }
 
