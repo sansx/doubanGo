@@ -10,6 +10,7 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"math/rand"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -102,7 +103,6 @@ var (
 )
 
 func main() {
-
 	rand.Seed(time.Now().Unix())
 	//proxysA := GetProxys("http://163.172.147.94:8811", "1",3,2e9)
 	//fmt.Printf("%v", proxysA)
@@ -182,18 +182,20 @@ func main() {
 	//insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values () on duplicate key update votes=values(votes), rate=values(rate), comment=values(comment);
 	foo.WriteString(`insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values `)
 	cCom.OnHTML(".article", func(e *colly.HTMLElement) {
+		MId := strings.Split(e.Request.URL.Path,"/")[2]
 		itemCount = itemCount + e.DOM.Find(`.comment-item`).Size()
 		e.DOM.Find(`.comment-item`).Each(func(i int, s *goquery.Selection) {
 			var CInfo commInfo
 			if val, ok := s.Attr("data-cid"); ok {
 				CInfo.Cid = val
 			}
+			CInfo.MovieId = MId
 			user := s.Find(".avatar a")
 			name, _ := user.Attr("title")
 			link, _ := user.Attr("href")
 			img, _ := user.Find("img").Attr("src")
 			CInfo.User = name
-			CInfo.UImg = link
+			CInfo.ULink = link
 			CInfo.UImg = img
 			date, _ := s.Find(".comment-time").Attr("title")
 			CInfo.Date = date
@@ -201,21 +203,23 @@ func main() {
 			CInfo.Comment = s.Find("p .short").Text()
 			switch true {
 			case s.Find(".rating").HasClass("allstar10"):
-				CInfo.Rate = "1star"
+				CInfo.Rate = "1"
 			case s.Find(".rating").HasClass("allstar20"):
-				CInfo.Rate = "2star"
+				CInfo.Rate = "2"
 			case s.Find(".rating").HasClass("allstar30"):
-				CInfo.Rate = "3star"
+				CInfo.Rate = "3"
 			case s.Find(".rating").HasClass("allstar40"):
-				CInfo.Rate = "4star"
+				CInfo.Rate = "4"
 			case s.Find(".rating").HasClass("allstar50"):
-				CInfo.Rate = "5star"
+				CInfo.Rate = "5"
 			}
-			createStr(CInfo, []string{"Rate"}, foo)
+			//cid, movieId, user, userLink, userImg, date, rate, votes, comment
+			createStr(CInfo, []string{ "Cid", "MovieId", "User", "ULink", "UImg", "Date", "Rate", "Votes", "Comment"}, foo)
 			if e.DOM.Find(`.comment-item`).Size() != i+1 {
 				foo.WriteString(",")
 			}
 			fmt.Printf("\n%v\n", CInfo)
+			return
 		})
 		rege := regexp.MustCompile(`\d+`)
 		num, _ := strconv.Atoi(rege.FindString(e.ChildText("li:first-child")))
@@ -223,12 +227,12 @@ func main() {
 		go func(n int, startCom int) {
 			//startCom := <-countNum
 			println("\n current:", startCom)
-			if n > startCom*300 {
+			if n > startCom*1000 {
 				infoWp.Add(1)
 				println("get:!!", startCom, n)
 				foo.WriteString(",")
 				comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
-				sleepNum, _ := strconv.ParseFloat(strconv.Itoa((5+rand.Intn(12)))+"e8", 64)
+				sleepNum, _ := strconv.ParseFloat(strconv.Itoa(10+rand.Intn(12))+"e8", 64)
 				time.Sleep(time.Duration(sleepNum))
 				err := cCom.Visit(comUrl)
 				checkErr(err)
@@ -239,7 +243,7 @@ func main() {
 	})
 	for idx, val := range movieArr.Subjects {
 		start = time.Now()
-		for i := 0; i < 2; i++ {
+		for i := 0; i < 1; i++ {
 			infoWp.Add(1)
 			//startCom := <-countNum
 			println("link num:", startCom)
@@ -250,11 +254,25 @@ func main() {
 			mCount()
 		}
 		infoWp.Wait()
-		foo.WriteString(" on duplicate key update rateInfo=values(rateInfo), commentNum=values(commentNum), wantSee=values(wantSee), hasSeen=values(hasSeen);")
+		foo.WriteString(" on duplicate key update rate=values(rate), votes=values(votes), comment=values(comment);")
 		foo.Flush()
 		sqlStr := insertStr.String()
 		fmt.Printf("\n%s\n", sqlStr)
 		fmt.Printf("No.%d %s-%s finish:%v\n total get: %d ", idx, val.Title, val.Id, time.Since(start), itemCount)
+		f, _ := os.OpenFile("./comm.txt", os.O_WRONLY | os.O_CREATE | os.O_APPEND , 0666)
+		_, err := f.WriteString(sqlStr)
+		checkErr(err)
+		defer f.Close()
+		stmt, err := db.Prepare(sqlStr)
+		checkErr(err)
+		sqlres, err := stmt.Exec()
+		checkErr(err)
+		affect, err := sqlres.RowsAffected()
+		checkErr(err)
+		fmt.Println("affect:", affect)
+		insertStr = bytes.Buffer{}
+		foo = bufio.NewWriter(&insertStr)
+		foo.WriteString(`insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values `)
 		startCom = 0
 		itemCount = 0
 	}
@@ -307,4 +325,5 @@ func createStr(movie interface{}, queryArr []string, str *bufio.Writer) {
 		}
 	}
 	str.WriteString(")")
+
 }

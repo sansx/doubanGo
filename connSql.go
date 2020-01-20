@@ -16,8 +16,9 @@ const (
 )
 
 func connSql() *sql.DB {
+	//, "?charset=utf8"
 	//构建连接："用户名:密码@tcp(IP:端口)/数据库?charset=utf8"
-	path := strings.Join([]string{userName, ":", password, "@tcp(", ip, ":", port, ")/", dbName, "?charset=utf8"}, "")
+	path := strings.Join([]string{userName, ":", password, "@tcp(", ip, ":", port, ")/", dbName}, "")
 	db, err := sql.Open("mysql", path)
 	checkErr(err)
 	return db
