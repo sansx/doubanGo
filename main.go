@@ -10,7 +10,6 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
 	"math/rand"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -90,7 +89,8 @@ var (
 		"Sec-Fetch-User":   "?1",
 		"User-Agent":       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
 		"X-Requested-With": "XMLHttpRequest",
-		"Cookie":           `ll="118174"; bid=iixAdsHav7g; __utmc=30149280; __utmc=223695111; __yadk_uid=1kCWbAOjqecDW3oPsC1w1gIAAbNMP0gF; _vwo_uuid_v2=D9889C3872072D24349633B722DCE59C9|68435c7981e40979aeee3e8570450858; trc_cookie_storage=taboola%2520global%253Auser-id%3Dfc4e983d-5c62-4d5f-bda4-f55698840db0-tuct50a29ac; ct=y; __utmz=30149280.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579315650%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; __utma=30149280.1092024888.1578148770.1579312712.1579315650.18; __utmb=30149280.0.10.1579315650; __utma=223695111.1173361526.1578148770.1579312712.1579315651.18; __utmb=223695111.0.10.1579315651; _pk_id.100001.4cf6=c42d1db054733a4e.1578148770.18.1579319697.1579312721.`,
+		"Cookie":	`bid=ushAA-2w-7Q; ll="118174"; __utmc=30149280; __utmc=223695111; __yadk_uid=upEYssVluItDlvwW3J9GdG9lLO8hxdjN; _vwo_uuid_v2=DF2B44256E1AC02453A49B9648A40100E|f561403fb009dba0f8cc78a30b7e2c70; viewed="27021790"; gr_user_id=36686aa0-46bb-49f2-b1fa-eba892225df8; trc_cookie_storage=taboola%2520global%253Auser-id%3D13252cda-6cfa-4214-9cc8-a6ca7bd4df0e-tuct4ff4bab; ct=y; __utmz=30149280.1579137437.8.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1579137437.7.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579590689%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; ap_v=0,6.0; __utma=30149280.1573436667.1578367462.1579566610.1579590689.21; __utma=223695111.29153026.1578367462.1579566610.1579590689.20; __utmb=223695111.0.10.1579590689; dbcl2="209565533:9wyG4GF57go"; ck=4mOa; push_noty_num=0; push_doumail_num=0; __utmv=30149280.20956; __utmb=30149280.4.10.1579590689; _pk_id.100001.4cf6=bb96bb66a5b250d0.1578367462.20.1579594912.1579566609.`,
+		//`ll="118174"; bid=iixAdsHav7g; __utmc=30149280; __utmc=223695111; __yadk_uid=1kCWbAOjqecDW3oPsC1w1gIAAbNMP0gF; _vwo_uuid_v2=D9889C3872072D24349633B722DCE59C9|68435c7981e40979aeee3e8570450858; trc_cookie_storage=taboola%2520global%253Auser-id%3Dfc4e983d-5c62-4d5f-bda4-f55698840db0-tuct50a29ac; ct=y; __utmz=30149280.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579315650%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; __utma=30149280.1092024888.1578148770.1579312712.1579315650.18; __utmb=30149280.0.10.1579315650; __utma=223695111.1173361526.1578148770.1579312712.1579315651.18; __utmb=223695111.0.10.1579315651; _pk_id.100001.4cf6=c42d1db054733a4e.1578148770.18.1579319697.1579312721.`,
 		//`ll="118174"; bid=iixAdsHav7g; __utmc=30149280; __utmz=30149280.1578148770.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmc=223695111; __utmz=223695111.1578148770.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __yadk_uid=1kCWbAOjqecDW3oPsC1w1gIAAbNMP0gF; _vwo_uuid_v2=D9889C3872072D24349633B722DCE59C9|68435c7981e40979aeee3e8570450858; trc_cookie_storage=taboola%2520global%253Auser-id%3Dfc4e983d-5c62-4d5f-bda4-f55698840db0-tuct50a29ac; ap_v=0,6.0; ct=y; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1578202711%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_id.100001.4cf6=c42d1db054733a4e.1578148770.4.1578202711.1578196026.; _pk_ses.100001.4cf6=*; __utma=30149280.1092024888.1578148770.1578195755.1578202711.4; __utmb=30149280.0.10.1578202711; __utma=223695111.1173361526.1578148770.1578195755.1578202711.4; __utmb=223695111.0.10.1578202711`,
 		"Upgrade-Insecure-Requests": "1",
 	}
@@ -100,6 +100,7 @@ var (
 	infoWp     = &sync.WaitGroup{}
 	startCom   = 0
 	countNum   = make(chan int)
+	commEnd = false
 )
 
 func main() {
@@ -150,13 +151,13 @@ func main() {
 	extensions.RandomUserAgent(c)
 	extensions.Referer(c)
 	getMList(c, db)
-	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=2&page_start=0"
+	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=1&page_start=1"
 	c.Visit(url)
 	c.Wait()
 	fmt.Printf("end sys: %v\n", time.Since(start))
 	//fmt.Printf("finail movieArr : %v", movieArr)
 	cInfo := c.Clone()
-	cInfo.SetRequestTimeout(5e9)
+	cInfo.SetRequestTimeout(10e9)
 
 	getMInfo(cInfo, infoIserte)
 	go sqlIn(infoIserte, db, wp)
@@ -181,9 +182,31 @@ func main() {
 	foo := bufio.NewWriter(&insertStr)
 	//insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values () on duplicate key update votes=values(votes), rate=values(rate), comment=values(comment);
 	foo.WriteString(`insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values `)
+
+	cCom.OnRequest(func(r *colly.Request) {
+		for key, val := range doubanConfig {
+			r.Headers.Set(key, val)
+		}
+		fmt.Println(r.ProxyURL, " : Visiting", r.URL)
+	})
+
 	cCom.OnHTML(".article", func(e *colly.HTMLElement) {
-		MId := strings.Split(e.Request.URL.Path,"/")[2]
+		if commEnd {
+			infoWp.Done()
+			return
+		}
+		MId := strings.Split(e.Request.URL.Path, "/")[2]
 		itemCount = itemCount + e.DOM.Find(`.comment-item`).Size()
+		println(e.DOM.Find(`.comment-item`).Length())
+		if e.DOM.Find(`.avatar`).Length() == 0 {
+			commEnd = true
+			infoWp.Done()
+			return
+		}
+		if startCom != 0 {
+			foo.WriteString(",")
+		}
+
 		e.DOM.Find(`.comment-item`).Each(func(i int, s *goquery.Selection) {
 			var CInfo commInfo
 			if val, ok := s.Attr("data-cid"); ok {
@@ -214,12 +237,11 @@ func main() {
 				CInfo.Rate = "5"
 			}
 			//cid, movieId, user, userLink, userImg, date, rate, votes, comment
-			createStr(CInfo, []string{ "Cid", "MovieId", "User", "ULink", "UImg", "Date", "Rate", "Votes", "Comment"}, foo)
+			createStr(CInfo, []string{"Cid", "MovieId", "User", "ULink", "UImg", "Date", "Rate", "Votes", "Comment"}, foo)
 			if e.DOM.Find(`.comment-item`).Size() != i+1 {
 				foo.WriteString(",")
 			}
-			fmt.Printf("\n%v\n", CInfo)
-			return
+			//fmt.Printf("\n%v\n", CInfo)
 		})
 		rege := regexp.MustCompile(`\d+`)
 		num, _ := strconv.Atoi(rege.FindString(e.ChildText("li:first-child")))
@@ -227,12 +249,11 @@ func main() {
 		go func(n int, startCom int) {
 			//startCom := <-countNum
 			println("\n current:", startCom)
-			if n > startCom*1000 {
+			if n > startCom*20 {
 				infoWp.Add(1)
 				println("get:!!", startCom, n)
-				foo.WriteString(",")
 				comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
-				sleepNum, _ := strconv.ParseFloat(strconv.Itoa(10+rand.Intn(12))+"e8", 64)
+				sleepNum, _ := strconv.ParseFloat(strconv.Itoa(5+rand.Intn(22))+"e8", 64)
 				time.Sleep(time.Duration(sleepNum))
 				err := cCom.Visit(comUrl)
 				checkErr(err)
@@ -243,7 +264,7 @@ func main() {
 	})
 	for idx, val := range movieArr.Subjects {
 		start = time.Now()
-		for i := 0; i < 1; i++ {
+		for i := 0; i < 2; i++ {
 			infoWp.Add(1)
 			//startCom := <-countNum
 			println("link num:", startCom)
@@ -251,7 +272,9 @@ func main() {
 			comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
 			err := cCom.Visit(comUrl)
 			checkErr(err)
-			mCount()
+			if i != 0 {
+				mCount()
+			}
 		}
 		infoWp.Wait()
 		foo.WriteString(" on duplicate key update rate=values(rate), votes=values(votes), comment=values(comment);")
@@ -259,10 +282,10 @@ func main() {
 		sqlStr := insertStr.String()
 		fmt.Printf("\n%s\n", sqlStr)
 		fmt.Printf("No.%d %s-%s finish:%v\n total get: %d ", idx, val.Title, val.Id, time.Since(start), itemCount)
-		f, _ := os.OpenFile("./comm.txt", os.O_WRONLY | os.O_CREATE | os.O_APPEND , 0666)
-		_, err := f.WriteString(sqlStr)
-		checkErr(err)
-		defer f.Close()
+		//f, _ := os.OpenFile("./comm.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+		//_, err := f.WriteString(sqlStr)
+		//checkErr(err)
+		//defer f.Close()
 		stmt, err := db.Prepare(sqlStr)
 		checkErr(err)
 		sqlres, err := stmt.Exec()
@@ -275,6 +298,7 @@ func main() {
 		foo.WriteString(`insert into movieComm (cid, movieId, user, userLink, userImg, date, rate, votes, comment) values `)
 		startCom = 0
 		itemCount = 0
+		commEnd = false
 	}
 }
 
