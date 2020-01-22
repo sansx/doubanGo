@@ -9,6 +9,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"github.com/gocolly/colly/extensions"
+	"github.com/gocolly/colly/proxy"
+	"log"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -89,7 +91,7 @@ var (
 		"Sec-Fetch-User":   "?1",
 		"User-Agent":       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36",
 		"X-Requested-With": "XMLHttpRequest",
-		"Cookie":	`bid=ushAA-2w-7Q; ll="118174"; __utmc=30149280; __utmc=223695111; __yadk_uid=upEYssVluItDlvwW3J9GdG9lLO8hxdjN; _vwo_uuid_v2=DF2B44256E1AC02453A49B9648A40100E|f561403fb009dba0f8cc78a30b7e2c70; viewed="27021790"; gr_user_id=36686aa0-46bb-49f2-b1fa-eba892225df8; trc_cookie_storage=taboola%2520global%253Auser-id%3D13252cda-6cfa-4214-9cc8-a6ca7bd4df0e-tuct4ff4bab; ct=y; __utmz=30149280.1579137437.8.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1579137437.7.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579590689%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; ap_v=0,6.0; __utma=30149280.1573436667.1578367462.1579566610.1579590689.21; __utma=223695111.29153026.1578367462.1579566610.1579590689.20; __utmb=223695111.0.10.1579590689; dbcl2="209565533:9wyG4GF57go"; ck=4mOa; push_noty_num=0; push_doumail_num=0; __utmv=30149280.20956; __utmb=30149280.4.10.1579590689; _pk_id.100001.4cf6=bb96bb66a5b250d0.1578367462.20.1579594912.1579566609.`,
+		"Cookie":           `bid=ushAA-2w-7Q; ll="118174"; __utmc=30149280; __utmc=223695111; __yadk_uid=upEYssVluItDlvwW3J9GdG9lLO8hxdjN; _vwo_uuid_v2=DF2B44256E1AC02453A49B9648A40100E|f561403fb009dba0f8cc78a30b7e2c70; viewed="27021790"; gr_user_id=36686aa0-46bb-49f2-b1fa-eba892225df8; trc_cookie_storage=taboola%2520global%253Auser-id%3D13252cda-6cfa-4214-9cc8-a6ca7bd4df0e-tuct4ff4bab; ct=y; __utmz=30149280.1579137437.8.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1579137437.7.5.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579590689%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; ap_v=0,6.0; __utma=30149280.1573436667.1578367462.1579566610.1579590689.21; __utma=223695111.29153026.1578367462.1579566610.1579590689.20; __utmb=223695111.0.10.1579590689; dbcl2="209565533:9wyG4GF57go"; ck=4mOa; push_noty_num=0; push_doumail_num=0; __utmv=30149280.20956; __utmb=30149280.4.10.1579590689; _pk_id.100001.4cf6=bb96bb66a5b250d0.1578367462.20.1579594912.1579566609.`,
 		//`ll="118174"; bid=iixAdsHav7g; __utmc=30149280; __utmc=223695111; __yadk_uid=1kCWbAOjqecDW3oPsC1w1gIAAbNMP0gF; _vwo_uuid_v2=D9889C3872072D24349633B722DCE59C9|68435c7981e40979aeee3e8570450858; trc_cookie_storage=taboola%2520global%253Auser-id%3Dfc4e983d-5c62-4d5f-bda4-f55698840db0-tuct50a29ac; ct=y; __utmz=30149280.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmz=223695111.1578919579.10.3.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1579315650%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_ses.100001.4cf6=*; __utma=30149280.1092024888.1578148770.1579312712.1579315650.18; __utmb=30149280.0.10.1579315650; __utma=223695111.1173361526.1578148770.1579312712.1579315651.18; __utmb=223695111.0.10.1579315651; _pk_id.100001.4cf6=c42d1db054733a4e.1578148770.18.1579319697.1579312721.`,
 		//`ll="118174"; bid=iixAdsHav7g; __utmc=30149280; __utmz=30149280.1578148770.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmc=223695111; __utmz=223695111.1578148770.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __yadk_uid=1kCWbAOjqecDW3oPsC1w1gIAAbNMP0gF; _vwo_uuid_v2=D9889C3872072D24349633B722DCE59C9|68435c7981e40979aeee3e8570450858; trc_cookie_storage=taboola%2520global%253Auser-id%3Dfc4e983d-5c62-4d5f-bda4-f55698840db0-tuct50a29ac; ap_v=0,6.0; ct=y; _pk_ref.100001.4cf6=%5B%22%22%2C%22%22%2C1578202711%2C%22https%3A%2F%2Fwww.google.com%2F%22%5D; _pk_id.100001.4cf6=c42d1db054733a4e.1578148770.4.1578202711.1578196026.; _pk_ses.100001.4cf6=*; __utma=30149280.1092024888.1578148770.1578195755.1578202711.4; __utmb=30149280.0.10.1578202711; __utma=223695111.1173361526.1578148770.1578195755.1578202711.4; __utmb=223695111.0.10.1578202711`,
 		"Upgrade-Insecure-Requests": "1",
@@ -100,32 +102,18 @@ var (
 	infoWp     = &sync.WaitGroup{}
 	startCom   = 0
 	countNum   = make(chan int)
-	commEnd = false
+	commEnd    = false
+	MLoop      = 1
 )
 
 func main() {
 	rand.Seed(time.Now().Unix())
-	//proxysA := GetProxys("http://163.172.147.94:8811", "1",3,2e9)
-	//fmt.Printf("%v", proxysA)
-	//return
-	//http://49.85.197.187:9999 http://122.5.109.113:9999 http://203.110.164.139:52144]
-	//	[http://163.204.245.107:9999 http://47.104.172.108:8118 http://183.166.132.2:9999
-	//["163.204.247.195:9999", "129.204.29.130:8080", "47.106.216.42:8000", "211.159.219.225:8118", "27.188.65.244:8060", "42.159.10.142:8080", "163.204.242.197:9999", "183.166.20.56:9999", "221.2.155.35:8060", "47.107.38.138:8000", "180.160.54.27:8118", "60.2.44.182:47293",]
+	proxysArr := GetProxys("http://163.172.147.94:8811", "1",3,2e9)
 	start := time.Now()
+	AStart := time.Now()
+	ACount := 0
 	mCount := countDown(&startCom)
-	//go func() {
-	//	for {
-	//		println("get count:", startCom)
-	//		countNum <- startCom
-	//		startCom++
-	//	}
-	//}()
 
-	//proxysArr := []string{
-	//	//"http://140.255.186.40:9999",
-	//	"http://222.95.144.43:3000",
-	//	//"http://123.160.1.96:9999",
-	//}
 	c := colly.NewCollector(
 		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36"),
 		colly.AllowURLRevisit(),
@@ -133,14 +121,19 @@ func main() {
 	)
 	db := connSql()
 	defer db.Close()
-	//if p, err := proxy.RoundRobinProxySwitcher(
-	//	proxysArr...,
-	//); err == nil {
-	//		fmt.Printf("Set success")
-	//	c.SetProxyFunc(p)
-	//}else {
-	//	log.Fatal(err)
+	//proxysArr := []string{
+	//	//"http://140.255.186.40:9999",
+	//	"http://222.95.144.43:3000",
+	//	//"http://123.160.1.96:9999",
 	//}
+	if p, err := proxy.RoundRobinProxySwitcher(
+		proxysArr...,
+	); err == nil {
+			fmt.Printf("Set success")
+		c.SetProxyFunc(p)
+	}else {
+		log.Fatal(err)
+	}
 	c.SetRequestTimeout(5e9)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*.douban.*",
@@ -151,7 +144,7 @@ func main() {
 	extensions.RandomUserAgent(c)
 	extensions.Referer(c)
 	getMList(c, db)
-	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=1&page_start=1"
+	url := "https://movie.douban.com/j/search_subjects?type=movie&tag=%E7%83%AD%E9%97%A8&sort=time&page_limit=2&page_start=10"
 	c.Visit(url)
 	c.Wait()
 	fmt.Printf("end sys: %v\n", time.Since(start))
@@ -175,7 +168,7 @@ func main() {
 	cInfo.Wait()
 	wp.Wait()
 	cCom := cInfo.Clone()
-	cCom.Async = false
+	//cCom.Async = false
 	var insertStr bytes.Buffer
 	itemCount := 0
 	commUrl := ""
@@ -191,10 +184,6 @@ func main() {
 	})
 
 	cCom.OnHTML(".article", func(e *colly.HTMLElement) {
-		if commEnd {
-			infoWp.Done()
-			return
-		}
 		MId := strings.Split(e.Request.URL.Path, "/")[2]
 		itemCount = itemCount + e.DOM.Find(`.comment-item`).Size()
 		println(e.DOM.Find(`.comment-item`).Length())
@@ -203,7 +192,8 @@ func main() {
 			infoWp.Done()
 			return
 		}
-		if startCom != 0 {
+		println("onHtml startCom:", startCom)
+		if startCom > MLoop -1  {
 			foo.WriteString(",")
 		}
 
@@ -260,11 +250,10 @@ func main() {
 			}
 			infoWp.Done()
 		}(num, startCom)
-		//fmt.Printf("asdasd:%s",rege.FindString(e.ChildText("li:first-child")))
 	})
 	for idx, val := range movieArr.Subjects {
 		start = time.Now()
-		for i := 0; i < 2; i++ {
+		for i := 0; i < MLoop; i++ {
 			infoWp.Add(1)
 			//startCom := <-countNum
 			println("link num:", startCom)
@@ -272,7 +261,7 @@ func main() {
 			comUrl := strings.Join([]string{commUrl, strconv.Itoa(startCom * 20), "&limit=20&sort=new_score&status=P"}, "")
 			err := cCom.Visit(comUrl)
 			checkErr(err)
-			if i != 0 {
+			if i < MLoop-1 {
 				mCount()
 			}
 		}
@@ -280,8 +269,10 @@ func main() {
 		foo.WriteString(" on duplicate key update rate=values(rate), votes=values(votes), comment=values(comment);")
 		foo.Flush()
 		sqlStr := insertStr.String()
-		fmt.Printf("\n%s\n", sqlStr)
-		fmt.Printf("No.%d %s-%s finish:%v\n total get: %d ", idx, val.Title, val.Id, time.Since(start), itemCount)
+		//fmt.Printf("\n%s\n", sqlStr)
+		fmt.Printf("No.%d %s-%s finish:%v\ntotal get: %d ", idx, val.Title, val.Id, time.Since(start), itemCount)
+		ACount += itemCount
+		println("ACount += itemCount : ", ACount-itemCount, " += ", itemCount, " is ", ACount)
 		//f, _ := os.OpenFile("./comm.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 		//_, err := f.WriteString(sqlStr)
 		//checkErr(err)
@@ -300,6 +291,7 @@ func main() {
 		itemCount = 0
 		commEnd = false
 	}
+	fmt.Printf("All Done for: %v \nAll get: %d",  time.Since(AStart), ACount)
 }
 
 func sqlIn(ch chan string, d *sql.DB, wp *sync.WaitGroup) {
