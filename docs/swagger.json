@@ -1,0 +1,75 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "测试",
+        "title": "dbMovieApi",
+        "contact": {},
+        "license": {},
+        "version": "0.0.1"
+    },
+    "basePath": "/api/db/",
+    "paths": {
+        "/accounts/{name}": {
+            "get": {
+                "description": "你好",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "测试"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "name,helloWorld",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/accounts/{some_id}": {
+            "get": {
+                "description": "get record by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "测试"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "userId",
+                        "name": "some_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

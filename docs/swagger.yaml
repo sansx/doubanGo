@@ -1,0 +1,49 @@
+basePath: /api/db/
+info:
+  contact: {}
+  description: 测试
+  license: {}
+  title: dbMovieApi
+  version: 0.0.1
+paths:
+  /accounts/{name}:
+    get:
+      consumes:
+      - application/json
+      description: 你好
+      parameters:
+      - description: name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: name,helloWorld
+          schema:
+            type: string
+      tags:
+      - 测试
+  /accounts/{some_id}:
+    get:
+      consumes:
+      - application/json
+      description: get record by ID
+      parameters:
+      - description: userId
+        in: path
+        name: some_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            type: string
+      tags:
+      - 测试
+swagger: "2.0"
